@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { ArrowRight, Sparkles, ShieldCheck, Receipt, Users, Smartphone, TrendingUp, CheckCircle2, Star } from 'lucide-react';
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
 export default async function LandingPage() {
   const { userId } = await auth();
