@@ -14,7 +14,8 @@ import {
   TrendingDown,
   ChevronRight,
   PlusCircle,
-  BarChart3
+  BarChart3,
+  Bell
 } from 'lucide-react';
 import { useUser } from '@clerk/nextjs';
 import { formatCurrency, cn } from '@/lib/utils';
