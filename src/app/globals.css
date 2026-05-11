@@ -1,26 +1,73 @@
 @import "tailwindcss";
 
+@theme {
+  --color-brand-orange: #f97316;
+  --color-brand-dark: #0f172a;
+  --color-brand-white: #ffffff;
+  
+  --color-primary: var(--color-brand-orange);
+  --color-secondary: var(--color-brand-dark);
+  
+  --font-sans: 'Inter', sans-serif;
+  
+  --radius-lg: 1rem;
+  --radius-md: 0.75rem;
+  --radius-sm: 0.5rem;
+
+  --shadow-premium: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0f172a;
+  --primary: #f97316;
+  --secondary: #0f172a;
+  --accent: #fdf2f2;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.dark {
+  --background: #0f172a;
+  --foreground: #ffffff;
+  --accent: #1e293b;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  overflow-x: hidden;
 }
+
+/* Custom Utilities */
+.glass-effect {
+  @apply bg-white/80 backdrop-blur-md border border-white/20;
+}
+
+.dark .glass-effect {
+  @apply bg-slate-900/80 border-slate-800/50;
+}
+
+.btn-primary {
+  @apply bg-brand-orange text-white px-6 py-3 rounded-md font-bold text-lg active:scale-95 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2;
+}
+
+.btn-secondary {
+  @apply bg-brand-dark text-white px-6 py-3 rounded-md font-bold text-lg active:scale-95 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2;
+}
+
+.card {
+  @apply bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl p-4 shadow-premium;
+}
+
+/* Bottom Nav Spacing for Mobile */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 20px);
+}
+
