@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { ArrowRight, Sparkles, ShieldCheck, Receipt, Users, Smartphone, TrendingUp } from 'lucide-react';
+import { ArrowRight, Sparkles, ShieldCheck, Receipt, Users, Smartphone, TrendingUp, CheckCircle2, Star } from 'lucide-react';
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 
@@ -298,5 +298,15 @@ function TestimonialCard({ quote, author, business }: any) {
   );
 }
 
-import { CheckCircle2, Star } from 'lucide-react';
+function FeatureCard({ icon, title, desc }: { icon: React.ReactNode, title: string, desc: string }) {
+  return (
+    <div className="p-8 bg-white rounded-3xl border border-slate-200 hover:border-brand-orange/30 hover:shadow-xl transition-all group text-left">
+      <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-brand-orange/10 transition-colors">
+        {React.cloneElement(icon as React.ReactElement, { size: 28 })}
+      </div>
+      <h3 className="text-xl font-bold mb-3">{title}</h3>
+      <p className="text-slate-500 leading-relaxed">{desc}</p>
+    </div>
+  );
+}
 
