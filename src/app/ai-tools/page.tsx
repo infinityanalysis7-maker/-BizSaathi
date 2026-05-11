@@ -3,8 +3,8 @@
 import React, { useState } from 'react';
 import { 
   Sparkles, 
-  Instagram, 
-  Facebook, 
+  Layout, 
+  Smartphone, 
   MessageCircle, 
   Copy, 
   RotateCcw, 
@@ -23,8 +23,8 @@ import { generateContent } from '@/lib/gemini';
 import { toast } from 'sonner';
 
 const PLATFORMS = [
-  { id: 'instagram', name: 'Instagram', icon: <Instagram size={18} /> },
-  { id: 'facebook', name: 'Facebook', icon: <Facebook size={18} /> },
+  { id: 'instagram', name: 'Instagram', icon: <Layout size={18} /> },
+  { id: 'facebook', name: 'Facebook', icon: <Smartphone size={18} /> },
   { id: 'whatsapp', name: 'WhatsApp', icon: <MessageCircle size={18} /> },
 ];
 
