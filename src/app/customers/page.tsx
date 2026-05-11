@@ -14,7 +14,8 @@ import {
   FileText,
   CreditCard,
   Edit,
-  Trash2
+  Trash2,
+  Users
 } from 'lucide-react';
 import { cn, formatCurrency } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
