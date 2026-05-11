@@ -18,7 +18,8 @@ import {
   Users,
   ChevronRight,
   ExternalLink,
-  Zap
+  Zap,
+  Sparkles
 } from 'lucide-react';
 import { cn, formatCurrency } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
