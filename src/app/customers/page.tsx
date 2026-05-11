@@ -152,7 +152,7 @@ export default function CustomersPage() {
                 <Users size={48} strokeWidth={1.5} />
              </div>
              <h3 className="text-2xl font-black text-slate-900 tracking-tight">No Customers Yet</h3>
-             <p className="text-slate-500 font-medium mt-2 max-w-sm mx-auto">Build your customer base to see insights, history, and AI-driven growth hints.</p>
+             <p className="text-slate-500 font-medium mt-2 max-w-sm mx-auto">Add your first customer to get started</p>
              <button className="mt-8 px-10 py-4 bg-brand-orange text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-2xl shadow-orange-100 hover:scale-105 transition-all">
                Add First Customer
              </button>
@@ -280,18 +280,6 @@ function MenuButton({ icon, label, color = "text-slate-700" }: any) {
       color
     )}>
       <span className="transition-transform group-hover:scale-110">{icon}</span>
-      {label}
-    </button>
-  );
-}
-
-function MenuButton({ icon, label, color = "text-slate-700" }: any) {
-  return (
-    <button className={cn(
-      "w-full flex items-center gap-3 px-4 py-2 text-sm font-medium hover:bg-slate-50 transition-colors",
-      color
-    )}>
-      {icon}
       {label}
     </button>
   );

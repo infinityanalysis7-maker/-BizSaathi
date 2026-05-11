@@ -42,7 +42,6 @@ export default function Dashboard() {
       if (!user) return;
       
       try {
-        // Fetch Business Info
         const { data: bizData } = await supabase
           .from('businesses')
           .select('*')
@@ -53,7 +52,9 @@ export default function Dashboard() {
           setBusiness(bizData);
           generateTip(bizData.type);
 
-          // Fetch Stats
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+
           const { data: transData } = await supabase
             .from('transactions')
             .select('*')
@@ -71,8 +72,13 @@ export default function Dashboard() {
             .eq('status', 'Pending');
 
           if (transData) {
-            const revenue = transData
-              .filter(t => t.type === 'Income')
+            // Filter revenue for TODAY ONLY as per "Today's Revenue" label
+            const todayRevenue = transData
+              .filter(t => {
+                const tDate = new Date(t.created_at);
+                tDate.setHours(0, 0, 0, 0);
+                return t.type === 'Income' && tDate.getTime() === today.getTime();
+              })
               .reduce((acc, t) => acc + Number(t.amount), 0);
             
             const pending = transData
@@ -80,13 +86,20 @@ export default function Dashboard() {
               .reduce((acc, t) => acc + Number(t.amount), 0);
 
             setStats({
-              revenue,
-              pending,
+              revenue: todayRevenue || 0,
+              pending: pending || 0,
               customers: customerCount || 0,
               followups: followupData?.length || 0
             });
 
             setRecentTransactions(transData.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 5));
+          } else {
+            setStats({
+              revenue: 0,
+              pending: 0,
+              customers: customerCount || 0,
+              followups: followupData?.length || 0
+            });
           }
 
           if (followupData) {
@@ -105,11 +118,11 @@ export default function Dashboard() {
 
   const generateTip = async (type: string) => {
     try {
-      const prompt = `Give a short, actionable business growth tip for a ${type} in India. Focus on customer retention or marketing. Keep it under 20 words. Include one relevant emoji.`;
+      const prompt = `Give one short business tip for ${type || 'small business'} owner in India. Max 2 lines.`;
       const tip = await generateContent(prompt);
       setAiTip(tip);
     } catch (e) {
-      setAiTip("Always keep your customers first! 🤝");
+      setAiTip("Focus on building strong customer relationships for long-term growth. 🤝");
     }
   };
 
@@ -202,7 +215,7 @@ export default function Dashboard() {
             ) : (
               <EmptyState 
                 title="No transactions yet" 
-                desc="Start recording your sales and expenses." 
+                desc="Create your first invoice!" 
                 icon={< IndianRupee />}
                 action="/transactions"
               />
@@ -241,7 +254,7 @@ export default function Dashboard() {
                   ))
                 ) : (
                   <div className="p-10 text-center bg-white rounded-[2.5rem] border-2 border-dashed border-slate-200">
-                    <p className="text-slate-400 font-bold">All caught up! 🎉</p>
+                    <p className="text-slate-400 font-bold">No follow-ups due. You're all caught up! ✅</p>
                   </div>
                 )}
              </div>

@@ -184,7 +184,7 @@ export default function TransactionsPage() {
                 </div>
                 <div className="text-center">
                   <h3 className="text-2xl font-black text-slate-900 tracking-tight">No Transactions</h3>
-                  <p className="text-slate-500 font-medium mt-1">Start tracking your business cash flow.</p>
+                  <p className="text-slate-500 font-medium mt-1">Add your first transaction to get started</p>
                 </div>
                 <button 
                   onClick={() => setShowAddModal(true)}

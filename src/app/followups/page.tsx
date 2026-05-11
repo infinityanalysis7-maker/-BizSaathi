@@ -172,8 +172,8 @@ export default function FollowUpsPage() {
                  <div className="w-24 h-24 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-6 text-slate-200">
                     <Bell size={48} strokeWidth={1} />
                  </div>
-                 <h3 className="text-2xl font-black text-slate-900 tracking-tight tracking-tight">All caught up! 🎉</h3>
-                 <p className="text-slate-500 font-medium mt-2">No pending follow-ups in this category.</p>
+                 <h3 className="text-2xl font-black text-slate-900 tracking-tight">No follow-ups due. You're all caught up! ✅</h3>
+                 <p className="text-slate-500 font-medium mt-2"></p>
               </motion.div>
             )}
           </AnimatePresence>
