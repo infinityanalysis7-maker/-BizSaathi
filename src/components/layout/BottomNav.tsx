@@ -3,25 +3,24 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Users, Receipt, Repeat, Sparkles, Bell } from 'lucide-react';
+import { LayoutDashboard, Users, Receipt, Bell, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 
 const navItems = [
-  { icon: Home, label: 'Home', href: '/dashboard' },
-  { icon: Users, label: 'Customers', href: '/customers' },
-  { icon: Receipt, label: 'Invoices', href: '/invoices' },
-  { icon: Bell, label: 'Reminders', href: '/followups' },
-  { icon: Sparkles, label: 'AI Tools', href: '/ai-tools' },
+  { icon: LayoutDashboard, label: 'Home', href: '/dashboard' },
+  { icon: Users, label: 'Clients', href: '/customers' },
+  { icon: Receipt, label: 'Bills', href: '/invoices' },
+  { icon: Bell, label: 'Tasks', href: '/followups' },
+  { icon: Sparkles, label: 'AI', href: '/ai-tools' },
 ];
 
 export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-6 left-4 right-4 z-50 md:hidden">
-      <div className="bg-white/90 backdrop-blur-2xl border border-white/50 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] px-4 h-20 flex justify-around items-center relative overflow-hidden">
-        <div className="absolute inset-0 bg-slate-50/30 pointer-events-none" />
+    <nav className="fixed bottom-8 left-6 right-6 z-50 md:hidden">
+      <div className="bg-slate-900 shadow-[0_20px_50px_-10px_rgba(0,0,0,0.5)] rounded-[2.5rem] px-4 h-22 py-2 flex justify-around items-center border border-white/10 backdrop-blur-xl">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
@@ -30,20 +29,22 @@ export function BottomNav() {
             <Link
               key={item.href}
               href={item.href}
-              className="flex flex-col items-center justify-center w-full h-full relative"
+              className="flex flex-col items-center justify-center w-full h-full relative group"
             >
-              {isActive && (
-                <motion.div 
-                  layoutId="bottomNavActive"
-                  className="absolute top-1 w-12 h-1 bg-brand-orange rounded-full shadow-[0_0_10px_rgba(249,115,22,0.5)]"
-                />
-              )}
               <div className={cn(
-                "flex flex-col items-center gap-1 transition-all",
-                isActive ? "text-brand-orange scale-110" : "text-slate-400"
+                "flex flex-col items-center gap-1.5 transition-all duration-300",
+                isActive ? "text-brand-orange -translate-y-1" : "text-slate-500 hover:text-slate-300"
               )}>
-                <Icon size={24} strokeWidth={isActive ? 3 : 2} />
-                <span className="text-[9px] font-black uppercase tracking-tighter">{item.label}</span>
+                <div className={cn(
+                  "p-3 rounded-2xl transition-all duration-500",
+                  isActive && "bg-white shadow-[0_10px_30px_rgba(255,255,255,0.1)] scale-110 rotate-3"
+                )}>
+                  <Icon size={24} strokeWidth={isActive ? 3 : 2.5} />
+                </div>
+                <span className={cn(
+                  "text-[8px] font-black uppercase tracking-[0.2em] transition-opacity",
+                  isActive ? "opacity-100" : "opacity-0"
+                )}>{item.label}</span>
               </div>
             </Link>
           );

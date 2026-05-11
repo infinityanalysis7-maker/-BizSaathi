@@ -13,7 +13,9 @@ import {
   Sparkles,
   Search,
   ChevronRight,
-  UserPlus
+  UserPlus,
+  X,
+  Phone
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { generateContent } from '@/lib/gemini';
@@ -28,6 +30,7 @@ export default function FollowUpsPage() {
   const [loadingAi, setLoadingAi] = useState<string | null>(null);
   const [followups, setFollowups] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAddModal, setShowAddModal] = useState(false);
 
   useEffect(() => {
     async function fetchFollowups() {
@@ -104,34 +107,36 @@ export default function FollowUpsPage() {
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="p-4 md:p-8 max-w-7xl mx-auto w-full space-y-10"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="p-4 md:p-10 max-w-7xl mx-auto w-full space-y-12"
     >
       {/* 3D Glass Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 p-8 bg-white border border-white shadow-2xl rounded-[2.5rem] relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-brand-orange/5 blur-3xl rounded-full" />
-        <div className="relative z-10">
-          <h1 className="text-3xl font-black text-brand-dark tracking-tight">Reminders</h1>
-          <p className="text-slate-500 font-medium mt-1">Don't let your customers forget you.</p>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 p-10 bg-white border border-slate-100 shadow-3xl rounded-[3rem] relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-brand-orange/5 blur-[120px] rounded-full" />
+        <div className="relative z-10 space-y-2">
+          <h1 className="text-4xl font-black text-brand-dark tracking-tighter leading-none">Reminders</h1>
+          <p className="text-slate-500 font-bold text-lg">Maintain momentum with timely follow-ups.</p>
         </div>
-        <button className="bg-brand-orange text-white px-8 py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-orange-100 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 relative z-10">
-          <Plus size={18} strokeWidth={3} /> Set Custom Reminder
+        <button 
+          onClick={() => setShowAddModal(true)}
+          className="bg-brand-orange text-white px-10 py-5 rounded-[1.5rem] font-black uppercase text-[10px] tracking-widest shadow-2xl shadow-orange-200 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3 relative z-10"
+        >
+          <Bell size={20} strokeWidth={3} /> Set Reminder
         </button>
       </div>
 
-      {/* Futuristic Tabs & Search */}
-      <div className="space-y-6">
-        <div className="flex flex-col lg:flex-row gap-6">
-          <div className="flex bg-white p-2 rounded-[1.5rem] border border-slate-100 shadow-xl relative overflow-hidden">
+      {/* Control Bar */}
+      <div className="flex flex-col lg:flex-row gap-8 items-center">
+         <div className="flex bg-white p-2.5 rounded-[2rem] border border-slate-100 shadow-2xl relative overflow-hidden shrink-0">
             {['Overdue', 'Due Today', 'Upcoming', 'All'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab as any)}
                 className={cn(
-                  "px-8 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all relative z-10",
+                  "px-8 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all relative z-10",
                   activeTab === tab 
-                    ? (tab === 'Overdue' ? "bg-red-600 text-white shadow-lg" : "bg-brand-dark text-white shadow-lg")
+                    ? (tab === 'Overdue' ? "bg-rose-600 text-white shadow-xl" : "bg-brand-dark text-white shadow-xl")
                     : "text-slate-400 hover:text-slate-600"
                 )}
               >
@@ -139,107 +144,190 @@ export default function FollowUpsPage() {
               </button>
             ))}
           </div>
-          <div className="relative flex-1 group">
-            <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-orange transition-colors" size={20} strokeWidth={2.5} />
+          <div className="relative flex-1 w-full group">
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-orange transition-colors" size={24} strokeWidth={2.5} />
             <input 
               type="text" 
               placeholder="Search by customer name..."
-              className="w-full pl-14 pr-6 py-5 bg-white border border-slate-100 rounded-[2rem] shadow-xl outline-none focus:ring-2 focus:ring-brand-orange/20 font-bold text-slate-700"
+              className="w-full pl-16 pr-8 py-6 bg-white border border-slate-100 rounded-[2.5rem] shadow-xl outline-none focus:ring-4 focus:ring-brand-orange/5 font-bold text-slate-700 text-lg transition-all"
             />
           </div>
-        </div>
-
-        {/* 3D Reminder List */}
-        <div className="space-y-6 min-h-[400px]">
-          <AnimatePresence mode="popLayout">
-            {filteredFollowups.length > 0 ? (
-              filteredFollowups.map((f, index) => (
-                <FollowUpCard 
-                  key={f.id} 
-                  f={f} 
-                  index={index} 
-                  loadingAi={loadingAi} 
-                  handleAiMessage={handleAiMessage}
-                  openWhatsApp={openWhatsApp}
-                />
-              ))
-            ) : (
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="text-center py-32 bg-white rounded-[3rem] border-2 border-dashed border-slate-100 shadow-inner"
-              >
-                 <div className="w-24 h-24 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-6 text-slate-200">
-                    <Bell size={48} strokeWidth={1} />
-                 </div>
-                 <h3 className="text-2xl font-black text-slate-900 tracking-tight">No follow-ups due. You're all caught up! ✅</h3>
-                 <p className="text-slate-500 font-medium mt-2"></p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
       </div>
+
+      {/* High-Impact List */}
+      <div className="space-y-8 min-h-[500px]">
+        <AnimatePresence mode="popLayout">
+          {filteredFollowups.length > 0 ? (
+            filteredFollowups.map((f, index) => (
+              <FollowUpCard 
+                key={f.id} 
+                f={f} 
+                index={index} 
+                loadingAi={loadingAi} 
+                handleAiMessage={handleAiMessage}
+                openWhatsApp={openWhatsApp}
+              />
+            ))
+          ) : (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center py-40 bg-white rounded-[4rem] border-2 border-dashed border-slate-100 shadow-inner flex flex-col items-center gap-8"
+            >
+               <div className="w-28 h-28 bg-slate-50 rounded-[2.5rem] flex items-center justify-center text-slate-200">
+                  <Bell size={64} strokeWidth={1} />
+               </div>
+               <div>
+                  <h3 className="text-3xl font-black text-slate-900 tracking-tight">No follow-ups due.</h3>
+                  <p className="text-slate-500 font-bold mt-2">You're all caught up! Keep up the great work. ✅</p>
+               </div>
+               <button 
+                  onClick={() => setShowAddModal(true)}
+                  className="px-10 py-5 bg-brand-dark text-white rounded-[1.5rem] font-black uppercase text-[10px] tracking-widest shadow-2xl hover:scale-105 transition-all"
+                >
+                 Create Reminder
+               </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Add Reminder Modal */}
+      <AnimatePresence>
+        {showAddModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowAddModal(false)}
+              className="absolute inset-0 bg-brand-dark/40 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 40 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 40 }}
+              className="bg-white w-full max-w-xl rounded-[3rem] p-12 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] relative z-10 border border-white"
+            >
+              <div className="flex justify-between items-center mb-10">
+                 <h2 className="text-3xl font-black text-brand-dark tracking-tight leading-none">Set Reminder</h2>
+                 <button onClick={() => setShowAddModal(false)} className="w-12 h-12 flex items-center justify-center bg-slate-50 hover:bg-slate-100 rounded-2xl transition-all">
+                    <X size={24} strokeWidth={3} className="text-slate-400" />
+                 </button>
+              </div>
+              <div className="space-y-8">
+                 <div className="space-y-3">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Customer Name</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Akash Gupta"
+                      className="w-full px-8 py-6 bg-slate-50 border border-slate-100 rounded-[1.5rem] font-bold text-slate-700 focus:border-brand-orange outline-none transition-all"
+                    />
+                 </div>
+                 <div className="space-y-3">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Due Date</label>
+                    <input 
+                      type="date" 
+                      className="w-full px-8 py-6 bg-slate-50 border border-slate-100 rounded-[1.5rem] font-bold text-slate-700 focus:border-brand-orange outline-none transition-all"
+                    />
+                 </div>
+                 <div className="space-y-3">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Reason</label>
+                    <textarea 
+                      placeholder="e.g. Payment for invoice #401"
+                      className="w-full px-8 py-6 bg-slate-50 border border-slate-100 rounded-[1.5rem] font-bold text-slate-700 focus:border-brand-orange outline-none transition-all h-24"
+                    />
+                 </div>
+              </div>
+              <button 
+                className="w-full py-6 mt-12 bg-brand-orange text-white font-black uppercase text-xs tracking-widest rounded-[1.5rem] shadow-2xl shadow-orange-100 hover:scale-[1.02] active:scale-[0.98] transition-all"
+              >
+                Save Reminder
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
 
 function FollowUpCard({ f, index, loadingAi, handleAiMessage, openWhatsApp }: any) {
   const isOverdue = f.status === 'Overdue';
+  const isDueToday = f.status === 'Due Today';
+
   return (
     <motion.div 
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.05 }}
-      whileHover={{ scale: 1.01, x: 5 }}
+      whileHover={{ y: -5 }}
       className={cn(
-        "bg-white p-8 rounded-[2.5rem] shadow-xl border-l-[12px] flex flex-col lg:flex-row lg:items-center justify-between gap-8 transition-all group",
-        isOverdue ? 'border-l-red-500 border-slate-50 shadow-red-50' : 'border-l-brand-orange border-slate-50 shadow-orange-50'
+        "bg-white p-10 rounded-[3rem] shadow-3xl border border-slate-50 flex flex-col xl:flex-row xl:items-center justify-between gap-10 transition-all group relative overflow-hidden",
       )}
     >
-      <div className="flex items-center gap-6">
+      <div className={cn(
+        "absolute top-0 left-0 w-2 h-full",
+        isOverdue ? "bg-rose-500" : (isDueToday ? "bg-brand-orange" : "bg-blue-500")
+      )} />
+      
+      <div className="flex items-center gap-8 relative z-10">
         <div className={cn(
-          "w-16 h-16 rounded-[1.5rem] flex items-center justify-center transition-transform group-hover:rotate-12 shadow-inner",
-          isOverdue ? 'bg-red-50 text-red-600' : 'bg-orange-50 text-brand-orange'
+          "w-20 h-20 rounded-[2rem] flex items-center justify-center transition-transform group-hover:scale-110 shadow-inner ring-4 ring-white",
+          isOverdue ? 'bg-rose-50 text-rose-600' : (isDueToday ? 'bg-orange-50 text-brand-orange' : 'bg-blue-50 text-blue-600')
         )}>
-          {isOverdue ? <AlertCircle size={32} strokeWidth={2.5} /> : <Clock size={32} strokeWidth={2.5} />}
+          <Bell size={36} strokeWidth={2.5} />
         </div>
         <div>
-          <h3 className="text-2xl font-black text-slate-900 tracking-tight">{f.customer_name || 'Customer'}</h3>
-          <p className="text-sm font-bold text-slate-400 flex items-center gap-2 mt-2">
-             <Calendar size={16} className="text-brand-orange" /> {new Date(f.due_date).toLocaleDateString()} • <span className="text-brand-orange uppercase tracking-wider">{f.reason}</span>
+          <h3 className="text-3xl font-black text-slate-900 tracking-tighter leading-none">{f.customer_name || 'Business Partner'}</h3>
+          <p className="text-sm font-bold text-slate-400 mt-4 flex items-center gap-3">
+             <Calendar size={18} className="text-brand-orange" /> {new Date(f.due_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })} • 
+             <span className={cn(
+               "uppercase tracking-widest text-[10px] font-black px-3 py-1 rounded-lg",
+               isOverdue ? "bg-rose-50 text-rose-600" : (isDueToday ? "bg-orange-50 text-brand-orange" : "bg-blue-50 text-blue-600")
+             )}>{f.reason}</span>
           </p>
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-4 relative z-10">
         <motion.button 
           whileTap={{ scale: 0.95 }}
           onClick={() => handleAiMessage(f.id, f.customer_name, f.reason)}
-          className="flex-1 lg:flex-none px-6 py-4 bg-indigo-600 text-white font-black uppercase text-[10px] tracking-widest rounded-2xl flex items-center justify-center gap-2 shadow-xl shadow-indigo-100 hover:brightness-110 transition-all group/btn relative overflow-hidden"
+          className="flex-1 xl:flex-none px-8 py-5 bg-slate-900 text-white font-black uppercase text-[10px] tracking-[0.2em] rounded-2xl flex items-center justify-center gap-3 shadow-xl hover:bg-black transition-all group/btn relative overflow-hidden"
         >
-          <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700" />
           {loadingAi === f.id ? (
-            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
           ) : (
-            <Sparkles size={18} strokeWidth={3} className="text-indigo-200" />
+            <Sparkles size={20} fill="white" className="text-white" />
           )}
-          AI Smart Msg
+          AI Smart Draft
         </motion.button>
         
-        <motion.button 
-          whileTap={{ scale: 0.95 }}
-          onClick={() => openWhatsApp(f.phone)}
-          className="flex-1 lg:flex-none px-6 py-4 bg-green-500 text-white font-black uppercase text-[10px] tracking-widest rounded-2xl flex items-center justify-center gap-2 shadow-xl shadow-green-100 hover:brightness-110 transition-all"
-        >
-          <MessageCircle size={18} strokeWidth={3} /> WhatsApp
-        </motion.button>
+        <div className="flex gap-4 flex-1 xl:flex-none">
+          <motion.button 
+            whileTap={{ scale: 0.95 }}
+            onClick={() => openWhatsApp(f.phone)}
+            className="flex-1 xl:w-16 xl:h-16 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center shadow-sm hover:bg-green-600 hover:text-white transition-all ring-1 ring-green-100"
+          >
+            <MessageCircle size={28} strokeWidth={3} />
+          </motion.button>
 
-        <motion.button 
-          whileTap={{ scale: 0.95 }}
-          className="flex-1 lg:flex-none px-6 py-4 bg-slate-900 text-white font-black uppercase text-[10px] tracking-widest rounded-2xl flex items-center justify-center gap-2 shadow-xl hover:bg-black transition-all"
-        >
-          <CheckCircle2 size={18} strokeWidth={3} /> Done
-        </motion.button>
+          <motion.a 
+            href={`tel:${f.phone}`}
+            whileTap={{ scale: 0.95 }}
+            className="flex-1 xl:w-16 xl:h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center shadow-sm hover:bg-blue-600 hover:text-white transition-all ring-1 ring-blue-100"
+          >
+            <Phone size={28} strokeWidth={3} />
+          </motion.a>
+
+          <motion.button 
+            whileTap={{ scale: 0.95 }}
+            className="flex-1 xl:w-16 xl:h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center shadow-sm hover:bg-emerald-600 hover:text-white transition-all ring-1 ring-emerald-100"
+          >
+            <CheckCircle2 size={28} strokeWidth={3} />
+          </motion.button>
+        </div>
       </div>
     </motion.div>
   );

@@ -136,23 +136,38 @@ export default function Dashboard() {
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="p-4 md:p-8 max-w-7xl mx-auto w-full space-y-10"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="p-4 md:p-10 max-w-7xl mx-auto w-full space-y-12"
     >
-      {/* 3D Glass Header */}
-      <header className="relative p-8 rounded-[2.5rem] bg-white border border-white/50 shadow-2xl overflow-hidden group">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-brand-orange/10 blur-[80px] -mr-32 -mt-32 transition-all group-hover:bg-brand-orange/20" />
-        <div className="relative z-10">
-          <h1 className="text-3xl md:text-4xl font-black text-brand-dark tracking-tight">
-            Namaste, <span className="text-brand-orange">{user?.firstName || 'Business Owner'}</span>! 👋
+      {/* Premium 3D Header Section */}
+      <header className="relative flex flex-col md:flex-row md:items-center justify-between gap-8 p-10 bg-white border border-slate-100 shadow-3xl rounded-[3rem] overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand-orange via-orange-400 to-transparent" />
+        <div className="absolute -top-20 -right-20 w-80 h-80 bg-brand-orange/5 blur-[120px] rounded-full" />
+        
+        <div className="relative z-10 space-y-2">
+          <div className="flex items-center gap-3">
+             <span className="px-4 py-1.5 bg-brand-orange/10 text-brand-orange text-[10px] font-black uppercase tracking-[0.2em] rounded-full border border-brand-orange/20">Live Dashboard</span>
+             <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+          </div>
+          <h1 className="text-4xl md:text-5xl font-black text-brand-dark tracking-tighter leading-tight">
+            Namaste, <span className="text-brand-orange">{user?.firstName || 'Business Partner'}</span>! 👋
           </h1>
-          <p className="text-slate-500 mt-2 font-medium">Aapke business ka haal-chaal yahan hai.</p>
+          <p className="text-slate-500 font-bold text-lg max-w-md">Your growth partner is ready. Here's your business at a glance.</p>
+        </div>
+
+        <div className="relative z-10 flex flex-wrap gap-4">
+           <Link href="/transactions" className="flex items-center gap-2 px-6 py-4 bg-slate-900 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-black transition-all shadow-xl">
+             <IndianRupee size={16} /> View Ledger
+           </Link>
+           <Link href="/reports" className="flex items-center gap-2 px-6 py-4 bg-white border border-slate-200 text-slate-700 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:border-slate-400 transition-all shadow-sm">
+             <BarChart3 size={16} /> Analysis
+           </Link>
         </div>
       </header>
 
-      {/* 3D Stats Bento Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* 3D Dynamic Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
         <StatCard 
           icon={<IndianRupee />}
           label="Today's Revenue"
@@ -162,7 +177,7 @@ export default function Dashboard() {
         />
         <StatCard 
           icon={<Clock />}
-          label="Pending Payments"
+          label="Pending Cash"
           value={formatCurrency(stats.pending)}
           color="red"
           isUrgent={stats.pending > 0}
@@ -170,91 +185,102 @@ export default function Dashboard() {
         />
         <StatCard 
           icon={<Users />}
-          label="Total Customers"
+          label="Active Base"
           value={stats.customers.toString()}
           color="blue"
           delay={0.3}
         />
         <StatCard 
-          icon={<BarChart3 />}
-          label="Pending Tasks"
+          icon={<Bell />}
+          label="Open Tasks"
           value={stats.followups.toString()}
-          color="green"
+          color="indigo"
           delay={0.4}
         />
       </div>
 
-      {/* High-Octane Quick Actions */}
-      <section className="space-y-6">
-        <h2 className="text-xl font-black text-brand-dark px-2">Quick Actions</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <ActionButton icon={<PlusCircle />} label="Add Customer" href="/customers" color="bg-brand-orange" delay={0.1} />
-          <ActionButton icon={<FileText />} label="Create Invoice" href="/invoices/create" color="bg-brand-dark" delay={0.2} />
-          <ActionButton icon={<MessageSquare />} label="AI Marketing" href="/ai-tools" color="bg-indigo-600" delay={0.3} />
-          <ActionButton icon={<TrendingUp />} label="View Reports" href="/reports" color="bg-emerald-600" delay={0.4} />
-        </div>
-      </section>
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-12">
+        {/* Core Operations Area */}
+        <div className="xl:col-span-8 space-y-12">
+          {/* High-Velocity Quick Actions */}
+          <section className="space-y-6">
+            <h2 className="text-xl font-black text-brand-dark px-2 uppercase tracking-[0.2em] flex items-center gap-3">
+              <PlusCircle className="text-brand-orange" size={20} /> 
+              Quick Actions
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <ActionButton icon={<Users />} label="Customer" href="/customers" color="bg-brand-orange" delay={0.1} />
+              <ActionButton icon={<FileText />} label="Invoice" href="/invoices" color="bg-brand-dark" delay={0.2} />
+              <ActionButton icon={<Sparkles />} label="AI Market" href="/ai-tools" color="bg-indigo-600" delay={0.3} />
+              <ActionButton icon={<TrendingUp />} label="Reports" href="/reports" color="bg-emerald-600" delay={0.4} />
+            </div>
+          </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-        {/* Recent Transactions with 3D Depth */}
-        <section className="lg:col-span-2 space-y-6">
-          <div className="flex justify-between items-center px-2">
-            <h2 className="text-xl font-black text-brand-dark">Recent Transactions</h2>
-            <Link href="/transactions" className="text-brand-orange font-bold flex items-center gap-1 hover:gap-2 transition-all">
-              View All <ChevronRight size={16} />
-            </Link>
-          </div>
-          
-          <div className="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 overflow-hidden">
-            {recentTransactions.length > 0 ? (
-              <div className="divide-y divide-slate-50">
-                {recentTransactions.map((t, i) => (
-                  <TransactionItem key={t.id} data={t} index={i} />
-                ))}
-              </div>
-            ) : (
-              <EmptyState 
-                title="No transactions yet" 
-                desc="Create your first invoice!" 
-                icon={< IndianRupee />}
-                action="/transactions"
-              />
-            )}
-          </div>
-        </section>
-
-        {/* AI & Follow-ups Sidebar */}
-        <div className="space-y-10">
-          {/* Neon AI Tip Section */}
-          <motion.section 
-            whileHover={{ y: -5, scale: 1.02 }}
-            className="p-8 rounded-[2.5rem] bg-gradient-to-br from-brand-dark to-slate-800 text-white shadow-2xl relative overflow-hidden"
-          >
-            <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-brand-orange/20 blur-[50px] rounded-full" />
-            <div className="relative z-10">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-3 bg-brand-orange/20 rounded-2xl text-brand-orange ring-1 ring-brand-orange/30">
-                  <Sparkles size={24} />
+          {/* Real-time Transactions Feed */}
+          <section className="space-y-6">
+            <div className="flex justify-between items-end px-2">
+              <h2 className="text-xl font-black text-brand-dark uppercase tracking-[0.2em]">Live Transactions</h2>
+              <Link href="/transactions" className="text-[10px] font-black text-brand-orange uppercase tracking-widest hover:underline">View Ledger</Link>
+            </div>
+            <div className="bg-white rounded-[3rem] shadow-2xl border border-slate-50 overflow-hidden min-h-[400px]">
+              {recentTransactions.length > 0 ? (
+                <div className="divide-y divide-slate-50">
+                  {recentTransactions.map((t, i) => (
+                    <TransactionItem key={t.id} data={t} index={i} />
+                  ))}
                 </div>
-                <h3 className="font-black text-lg tracking-tight">AI Business Tip</h3>
+              ) : (
+                <EmptyState 
+                  title="No Transactions" 
+                  desc="Create your first invoice!" 
+                  icon={<IndianRupee />}
+                  action="/transactions"
+                />
+              )}
+            </div>
+          </section>
+        </div>
+
+        {/* Intelligence Sidebar */}
+        <div className="xl:col-span-4 space-y-12">
+           {/* Glass AI Engine */}
+           <motion.section 
+            whileHover={{ y: -5 }}
+            className="p-10 rounded-[3rem] bg-slate-900 text-white shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] relative overflow-hidden group"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/20 to-transparent" />
+            <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-brand-orange/30 blur-[60px] rounded-full group-hover:scale-125 transition-transform duration-700" />
+            
+            <div className="relative z-10">
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-14 h-14 bg-brand-orange rounded-2xl flex items-center justify-center text-white shadow-xl shadow-orange-500/20 ring-4 ring-white/5">
+                  <Sparkles size={28} fill="white" />
+                </div>
+                <div>
+                  <h3 className="font-black text-lg tracking-tight uppercase">AI Growth Engine</h3>
+                  <p className="text-[10px] text-slate-400 font-black tracking-widest">Powered by Gemini</p>
+                </div>
               </div>
-              <p className="text-slate-300 leading-relaxed font-medium text-lg italic">
+              <p className="text-indigo-50 leading-relaxed font-bold text-lg italic bg-white/5 p-6 rounded-[2rem] border border-white/10 backdrop-blur-sm">
                 "{aiTip}"
               </p>
             </div>
           </motion.section>
 
-          {/* Follow-ups with Glassmorphism */}
+          {/* Follow-ups Matrix */}
           <section className="space-y-6">
-             <h2 className="text-xl font-black text-brand-dark px-2">Due Follow-ups</h2>
+             <h2 className="text-xl font-black text-brand-dark px-2 uppercase tracking-[0.2em]">Urgent Reminders</h2>
              <div className="space-y-4">
                 {recentFollowups.length > 0 ? (
                   recentFollowups.map((f, i) => (
                     <FollowUpItem key={f.id} data={f} index={i} />
                   ))
                 ) : (
-                  <div className="p-10 text-center bg-white rounded-[2.5rem] border-2 border-dashed border-slate-200">
-                    <p className="text-slate-400 font-bold">No follow-ups due. You're all caught up! ✅</p>
+                  <div className="p-12 text-center bg-white rounded-[3rem] border-2 border-dashed border-slate-100 flex flex-col items-center gap-4">
+                    <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-200">
+                       <Bell size={32} />
+                    </div>
+                    <p className="text-slate-400 font-black text-xs uppercase tracking-widest">No follow-ups due. ✅</p>
                   </div>
                 )}
              </div>
@@ -267,10 +293,10 @@ export default function Dashboard() {
 
 function StatCard({ icon, label, value, color, isUrgent, delay }: any) {
   const colors: any = {
-    orange: "text-orange-600 bg-orange-50 shadow-orange-100",
-    red: "text-red-600 bg-red-50 shadow-red-100",
-    blue: "text-blue-600 bg-blue-50 shadow-blue-100",
-    green: "text-emerald-600 bg-emerald-50 shadow-emerald-100",
+    orange: "bg-orange-50 text-orange-600 ring-orange-100",
+    red: "bg-rose-50 text-rose-600 ring-rose-100",
+    blue: "bg-blue-50 text-blue-600 ring-blue-100",
+    indigo: "bg-indigo-50 text-indigo-600 ring-indigo-100",
   };
 
   return (
@@ -278,20 +304,17 @@ function StatCard({ icon, label, value, color, isUrgent, delay }: any) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay }}
-      whileHover={{ y: -8, rotateX: 2, rotateY: -2 }}
-      className="bg-white p-6 rounded-[2.5rem] shadow-xl border border-slate-50 flex flex-col gap-4 relative overflow-hidden group transition-all"
+      whileHover={{ y: -10, rotateX: 2, rotateY: -2 }}
+      className="bg-white p-8 rounded-[3rem] shadow-2xl border border-slate-50 flex flex-col gap-6 relative group transition-all"
     >
-      <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110", colors[color])}>
-        {React.cloneElement(icon, { size: 28, strokeWidth: 2.5 })}
+      <div className={cn("w-16 h-16 rounded-2xl flex items-center justify-center transition-all group-hover:scale-110 group-hover:rotate-12 ring-4 shadow-inner", colors[color])}>
+        {React.cloneElement(icon, { size: 32, strokeWidth: 2.5 })}
       </div>
       <div>
-        <p className="text-sm text-slate-500 font-bold uppercase tracking-wider">{label}</p>
-        <p className={cn("text-3xl font-black mt-1", isUrgent ? 'text-red-600' : 'text-brand-dark')}>
+        <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em]">{label}</p>
+        <p className={cn("text-3xl font-black mt-2 tracking-tighter", isUrgent ? 'text-rose-600' : 'text-slate-900')}>
           {value}
         </p>
-      </div>
-      <div className="absolute -bottom-2 -right-2 opacity-5 scale-150 rotate-12 transition-transform group-hover:rotate-0">
-        {icon}
       </div>
     </motion.div>
   );
@@ -304,12 +327,12 @@ function ActionButton({ icon, label, color, delay, href }: any) {
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay }}
     >
-      <Link href={href} className={`${color} text-white p-6 rounded-[2rem] flex flex-col items-center justify-center gap-4 active:scale-95 transition-all shadow-2xl hover:shadow-3xl hover:-translate-y-2 group relative overflow-hidden`}>
+      <Link href={href} className={`${color} text-white p-8 rounded-[2.5rem] flex flex-col items-center justify-center gap-4 active:scale-95 transition-all shadow-[0_20px_40px_-15px_rgba(0,0,0,0.2)] hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] hover:-translate-y-2 group relative overflow-hidden`}>
         <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-        <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-md ring-1 ring-white/30 transition-transform group-hover:rotate-12">
-          {React.cloneElement(icon, { size: 32, strokeWidth: 2 })}
+        <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-md ring-1 ring-white/30 transition-transform group-hover:rotate-12 group-hover:scale-110">
+          {React.cloneElement(icon, { size: 36, strokeWidth: 2.5 })}
         </div>
-        <span className="text-sm font-black uppercase tracking-tight">{label}</span>
+        <span className="text-[10px] font-black uppercase tracking-widest">{label}</span>
       </Link>
     </motion.div>
   );
@@ -321,31 +344,31 @@ function TransactionItem({ data, index }: any) {
     <motion.div 
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: index * 0.1 }}
-      className="flex items-center justify-between p-6 hover:bg-slate-50/80 transition-all cursor-default group"
+      transition={{ delay: index * 0.05 }}
+      className="flex items-center justify-between p-8 hover:bg-slate-50/80 transition-all cursor-default group"
     >
-      <div className="flex items-center gap-5">
+      <div className="flex items-center gap-6">
         <div className={cn(
-          "w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl transition-transform group-hover:scale-110",
-          isIncome ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+          "w-16 h-16 rounded-[1.5rem] flex items-center justify-center font-black text-2xl transition-transform group-hover:scale-110",
+          isIncome ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
         )}>
-          {data.customer_name ? data.customer_name.charAt(0) : <IndianRupee size={24} />}
+          {data.customer_name ? data.customer_name.charAt(0) : <IndianRupee size={28} />}
         </div>
         <div>
-          <p className="font-black text-lg text-slate-900 tracking-tight">{data.description || data.customer_name || 'Transaction'}</p>
-          <p className="text-sm font-bold text-slate-400 flex items-center gap-2 mt-1">
-            {new Date(data.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • 
-            <span className={isIncome ? 'text-green-500/80' : 'text-red-500/80'}>{data.category || data.type}</span>
+          <p className="font-black text-xl text-slate-900 tracking-tight leading-none">{data.description || data.customer_name || 'Business Entry'}</p>
+          <p className="text-sm font-bold text-slate-400 flex items-center gap-2 mt-2">
+            <Clock size={14} className="text-brand-orange" /> {new Date(data.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • 
+            <span className={cn("uppercase tracking-wider text-[10px] font-black", isIncome ? 'text-emerald-500' : 'text-rose-500')}>{data.category || data.type}</span>
           </p>
         </div>
       </div>
       <div className="text-right">
-        <p className={cn("text-xl font-black tracking-tight", isIncome ? 'text-green-600' : 'text-brand-dark')}>
+        <p className={cn("text-2xl font-black tracking-tighter", isIncome ? 'text-emerald-600' : 'text-brand-dark')}>
           {isIncome ? '+' : '-'}{formatCurrency(data.amount)}
         </p>
         <span className={cn(
-          "text-[10px] font-black uppercase px-3 py-1 rounded-full mt-2 inline-block shadow-sm",
-          data.status === 'Paid' ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-orange-50 text-orange-700 border border-orange-100'
+          "text-[9px] font-black uppercase px-3 py-1 rounded-full mt-2 inline-block border",
+          data.status === 'Paid' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-orange-50 text-orange-600 border-orange-100'
         )}>
           {data.status}
         </span>
@@ -362,29 +385,22 @@ function FollowUpItem({ data, index }: any) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
       className={cn(
-        "p-6 rounded-[2rem] border transition-all hover:shadow-xl group cursor-pointer",
-        isOverdue ? 'bg-red-50 border-red-100' : 'bg-white border-slate-100 shadow-sm'
+        "p-8 rounded-[2.5rem] border transition-all hover:shadow-2xl group cursor-pointer relative overflow-hidden",
+        isOverdue ? 'bg-rose-50 border-rose-100' : 'bg-white border-slate-100 shadow-sm'
       )}
     >
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-5 relative z-10">
          <div className={cn(
-           "w-14 h-14 rounded-2xl flex items-center justify-center transition-transform group-hover:rotate-12",
-           isOverdue ? 'bg-red-100 text-red-600' : 'bg-brand-orange/10 text-brand-orange'
+           "w-16 h-16 rounded-2xl flex items-center justify-center transition-all group-hover:rotate-12 shadow-inner ring-4",
+           isOverdue ? 'bg-rose-100 text-rose-600 ring-rose-200' : 'bg-brand-orange/10 text-brand-orange ring-orange-50'
          )}>
-            <Clock size={24} strokeWidth={2.5} />
+            <Bell size={28} strokeWidth={2.5} />
          </div>
-         <div className="flex-1">
-            <p className="font-black text-slate-900 tracking-tight">{data.customer_name || 'Customer'}</p>
-            <p className="text-xs font-bold text-slate-500 mt-1 uppercase tracking-wider">{data.reason}</p>
+         <div className="flex-1 overflow-hidden">
+            <p className="font-black text-slate-900 tracking-tight text-lg truncate">{data.customer_name || 'Partner'}</p>
+            <p className="text-[10px] font-black text-slate-400 mt-1 uppercase tracking-widest truncate">{data.reason}</p>
          </div>
-         <div className="text-right">
-            <p className={cn("text-xs font-black uppercase tracking-widest", isOverdue ? 'text-red-600' : 'text-brand-orange')}>
-              {isOverdue ? 'Overdue' : 'Upcoming'}
-            </p>
-            <button className="bg-brand-orange/10 text-brand-orange text-[10px] font-black uppercase px-3 py-1 rounded-lg mt-2 hover:bg-brand-orange hover:text-white transition-all">
-              Message
-            </button>
-         </div>
+         <ChevronRight size={20} className="text-slate-300 group-hover:text-brand-orange transition-colors" />
       </div>
     </motion.div>
   );
@@ -392,16 +408,16 @@ function FollowUpItem({ data, index }: any) {
 
 function EmptyState({ title, desc, icon, action }: any) {
   return (
-    <div className="p-16 text-center flex flex-col items-center gap-4">
-      <div className="w-20 h-20 bg-slate-50 rounded-[2rem] flex items-center justify-center text-slate-300">
-        {React.cloneElement(icon, { size: 40 })}
+    <div className="p-20 text-center flex flex-col items-center gap-6">
+      <div className="w-24 h-24 bg-slate-50 rounded-[2.5rem] flex items-center justify-center text-slate-200 shadow-inner">
+        {React.cloneElement(icon, { size: 48, strokeWidth: 1 })}
       </div>
       <div>
-        <h3 className="text-xl font-black text-slate-900">{title}</h3>
-        <p className="text-slate-500 font-medium mt-1">{desc}</p>
+        <h3 className="text-2xl font-black text-slate-900 tracking-tight">{title}</h3>
+        <p className="text-slate-500 font-bold mt-2">{desc}</p>
       </div>
-      <Link href={action} className="mt-4 px-8 py-3 bg-brand-orange text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-orange-100 hover:scale-105 active:scale-95 transition-all">
-        Get Started
+      <Link href={action} className="mt-4 px-10 py-5 bg-brand-orange text-white rounded-[1.5rem] font-black uppercase text-[10px] tracking-widest shadow-2xl shadow-orange-200 hover:scale-105 active:scale-95 transition-all">
+        Add Your First Entry
       </Link>
     </div>
   );
