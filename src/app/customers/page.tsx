@@ -15,18 +15,22 @@ import {
   CreditCard,
   Edit,
   Trash2,
-  Users
+  Users,
+  ChevronRight,
+  ExternalLink,
+  Zap
 } from 'lucide-react';
 import { cn, formatCurrency } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 import { useUser } from '@clerk/nextjs';
 import { toast } from 'sonner';
+import { motion, AnimatePresence } from 'framer-motion';
 
-const TAG_COLORS = {
-  'VIP': 'bg-purple-100 text-purple-700 border-purple-200',
-  'Regular': 'bg-blue-100 text-blue-700 border-blue-200',
-  'New': 'bg-green-100 text-green-700 border-green-200',
-  'Lost': 'bg-red-100 text-red-700 border-red-200',
+const TAG_COLORS: any = {
+  'VIP': 'from-purple-500 to-indigo-600 shadow-indigo-200 text-white',
+  'Regular': 'from-blue-500 to-cyan-600 shadow-blue-200 text-white',
+  'New': 'from-emerald-500 to-teal-600 shadow-emerald-200 text-white',
+  'Lost': 'from-rose-500 to-red-600 shadow-red-200 text-white',
 };
 
 export default function CustomersPage() {
@@ -39,66 +43,86 @@ export default function CustomersPage() {
   useEffect(() => {
     async function fetchCustomers() {
       if (!user) return;
-      const { data, error } = await supabase
-        .from('customers')
-        .select('*')
-        .order('name', { ascending: true });
+      try {
+        const { data: bizData } = await supabase
+          .from('businesses')
+          .select('id')
+          .eq('owner_id', user.id)
+          .single();
 
-      if (data) setCustomers(data);
-      setLoading(false);
+        if (bizData) {
+          const { data, error } = await supabase
+            .from('customers')
+            .select('*')
+            .eq('business_id', bizData.id)
+            .order('name', { ascending: true });
+
+          if (data) setCustomers(data);
+        }
+      } catch (e) {
+        console.error("Error fetching customers:", e);
+      } finally {
+        setLoading(false);
+      }
     }
     fetchCustomers();
   }, [user]);
 
-  // Dummy data for demonstration if empty
-  const displayCustomers = customers.length > 0 ? customers : [
-    { id: '1', name: 'Rajesh Sharma', phone: '9876543210', tag: 'VIP', total_spent: 15400, last_visit: '2 days ago', payment_status: 'Clear' },
-    { id: '2', name: 'Anjali Gupta', phone: '9988776655', tag: 'Regular', total_spent: 8200, last_visit: '1 week ago', payment_status: 'Pending' },
-    { id: '3', name: 'Vikram Singh', phone: '9122334455', tag: 'New', total_spent: 500, last_visit: 'Today', payment_status: 'Clear' },
-    { id: '4', name: 'Suresh Raina', phone: '9000000000', tag: 'Lost', total_spent: 2100, last_visit: '2 months ago', payment_status: 'Clear' },
-  ];
-
-  const filteredCustomers = displayCustomers.filter(c => {
+  const filteredCustomers = customers.filter(c => {
     const matchesSearch = c.name.toLowerCase().includes(search.toLowerCase()) || c.phone.includes(search);
     const matchesFilter = filter === 'All' || c.tag === filter || (filter === 'Pending' && c.payment_status === 'Pending');
     return matchesSearch && matchesFilter;
   });
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[80vh]">
+        <div className="w-12 h-12 border-4 border-brand-orange border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   return (
-    <div className="p-4 md:p-8 max-w-7xl mx-auto w-full space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-brand-dark">Customers</h1>
-          <p className="text-slate-500">Manage your business relationship here.</p>
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="p-4 md:p-8 max-w-7xl mx-auto w-full space-y-10"
+    >
+      {/* 3D Glass Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-8 bg-white border border-white shadow-2xl rounded-[2.5rem] relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-brand-orange/5 blur-3xl rounded-full" />
+        <div className="relative z-10">
+          <h1 className="text-3xl font-black text-brand-dark tracking-tight">Customers</h1>
+          <p className="text-slate-500 font-medium mt-1">Manage your business relationship here.</p>
         </div>
-        <button className="btn-primary shadow-orange">
-          <UserPlus size={20} /> Add New Customer
+        <button className="bg-brand-orange text-white px-8 py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-orange-100 hover:scale-105 active:scale-95 transition-all flex items-center gap-2">
+          <UserPlus size={18} strokeWidth={3} /> Add New Customer
         </button>
       </div>
 
-      {/* Search & Filter */}
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+      {/* Futuristic Search & Filter */}
+      <div className="flex flex-col lg:flex-row gap-6">
+        <div className="relative flex-1 group">
+          <div className="absolute inset-0 bg-brand-orange/5 blur-xl group-focus-within:bg-brand-orange/10 transition-all rounded-3xl" />
+          <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-orange transition-colors" size={20} strokeWidth={2.5} />
           <input 
             type="text" 
             placeholder="Search by name or phone..." 
-            className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-2xl focus:border-brand-orange outline-none shadow-sm"
+            className="w-full pl-14 pr-6 py-5 bg-white/80 backdrop-blur-md border border-slate-100 rounded-[2rem] outline-none focus:ring-2 focus:ring-brand-orange/20 shadow-lg relative z-10 font-bold text-slate-700 placeholder:text-slate-400 transition-all"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
-          {['All', 'VIP', 'Regular', 'New', 'Lost', 'Pending'].map((f) => (
+        <div className="flex gap-3 overflow-x-auto pb-4 lg:pb-0 scrollbar-hide px-2">
+          {['All', 'VIP', 'Regular', 'New', 'Lost'].map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
               className={cn(
-                "px-6 py-3 rounded-2xl font-bold whitespace-nowrap transition-all border",
+                "px-8 py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all border relative",
                 filter === f 
-                  ? "bg-brand-dark text-white border-brand-dark shadow-md" 
-                  : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
+                  ? "bg-brand-dark text-white border-brand-dark shadow-xl -translate-y-1" 
+                  : "bg-white text-slate-500 border-slate-100 hover:border-slate-300 hover:shadow-md"
               )}
             >
               {f}
@@ -107,108 +131,157 @@ export default function CustomersPage() {
         </div>
       </div>
 
-      {/* Customer List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredCustomers.map((customer) => (
-          <CustomerCard key={customer.id} customer={customer} />
-        ))}
-      </div>
-
-      {filteredCustomers.length === 0 && (
-        <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-300">
-           <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400">
-              <Users size={40} />
-           </div>
-           <h3 className="text-xl font-bold text-slate-900">No Customers Found</h3>
-           <p className="text-slate-500 mt-2">Add your first customer to get started.</p>
-        </div>
-      )}
-    </div>
+      {/* Insane Customer Grid */}
+      <AnimatePresence mode="popLayout">
+        {filteredCustomers.length > 0 ? (
+          <motion.div 
+            layout
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          >
+            {filteredCustomers.map((customer, index) => (
+              <CustomerCard key={customer.id} customer={customer} index={index} />
+            ))}
+          </motion.div>
+        ) : (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center py-24 bg-white/50 backdrop-blur-sm rounded-[3rem] border-2 border-dashed border-slate-200"
+          >
+             <div className="w-24 h-24 bg-slate-100 rounded-3xl flex items-center justify-center mx-auto mb-6 text-slate-300">
+                <Users size={48} strokeWidth={1.5} />
+             </div>
+             <h3 className="text-2xl font-black text-slate-900 tracking-tight">No Customers Yet</h3>
+             <p className="text-slate-500 font-medium mt-2 max-w-sm mx-auto">Build your customer base to see insights, history, and AI-driven growth hints.</p>
+             <button className="mt-8 px-10 py-4 bg-brand-orange text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-2xl shadow-orange-100 hover:scale-105 transition-all">
+               Add First Customer
+             </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }
 
-function CustomerCard({ customer }: { customer: any }) {
+function CustomerCard({ customer, index }: { customer: any, index: number }) {
   const [showMenu, setShowMenu] = useState(false);
 
   return (
-    <div className="card hover:shadow-lg transition-all group relative overflow-hidden">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05 }}
+      whileHover={{ y: -10, rotateX: 2, rotateY: -2 }}
+      className="p-8 bg-white border border-white shadow-xl rounded-[2.5rem] relative group transition-all duration-500"
+    >
+      <div className="absolute inset-0 bg-gradient-to-br from-transparent to-slate-50/50 rounded-[2.5rem] pointer-events-none" />
+      
       {/* Top Section */}
-      <div className="flex justify-between items-start mb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-xl font-black text-slate-400">
+      <div className="flex justify-between items-start mb-8 relative z-10">
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 bg-slate-50 rounded-[1.5rem] flex items-center justify-center text-2xl font-black text-brand-orange shadow-inner ring-1 ring-slate-100 group-hover:scale-110 transition-transform">
             {customer.name.charAt(0)}
           </div>
           <div>
-            <h3 className="font-bold text-slate-900 group-hover:text-brand-orange transition-colors">{customer.name}</h3>
-            <p className="text-xs text-slate-500">{customer.phone}</p>
+            <h3 className="font-black text-xl text-slate-900 tracking-tight leading-none group-hover:text-brand-orange transition-colors">{customer.name}</h3>
+            <p className="text-sm font-bold text-slate-400 mt-2 flex items-center gap-1">
+              <Zap size={14} className="text-brand-orange" /> {customer.phone}
+            </p>
           </div>
         </div>
         <div className="relative">
           <button 
             onClick={() => setShowMenu(!showMenu)}
-            className="p-2 hover:bg-slate-100 rounded-full transition-colors"
+            className="w-10 h-10 flex items-center justify-center bg-slate-50 hover:bg-slate-100 rounded-xl transition-colors"
           >
             <MoreVertical size={20} className="text-slate-400" />
           </button>
           
-          {showMenu && (
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border border-slate-100 z-10 py-2 overflow-hidden animate-in fade-in zoom-in duration-200">
-               <MenuButton icon={<Edit size={16} />} label="Edit Details" />
-               <MenuButton icon={<History size={16} />} label="View History" />
-               <MenuButton icon={<FileText size={16} />} label="Create Invoice" />
-               <MenuButton icon={<CreditCard size={16} />} label="Add Transaction" />
-               <div className="border-t border-slate-50 my-1" />
-               <MenuButton icon={<Trash2 size={16} />} label="Delete" color="text-red-600" />
-            </div>
-          )}
+          <AnimatePresence>
+            {showMenu && (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9, y: -10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: -10 }}
+                className="absolute right-0 mt-4 w-56 bg-white/90 backdrop-blur-xl rounded-[1.5rem] shadow-3xl border border-slate-100 z-50 py-3 overflow-hidden ring-1 ring-black/5"
+              >
+                 <MenuButton icon={<Edit size={18} />} label="Edit Profile" />
+                 <MenuButton icon={<History size={18} />} label="Visit History" />
+                 <MenuButton icon={<FileText size={18} />} label="Send Invoice" />
+                 <MenuButton icon={<CreditCard size={18} />} label="Add Order" />
+                 <div className="h-px bg-slate-100 my-2 mx-4" />
+                 <MenuButton icon={<Trash2 size={18} />} label="Delete" color="text-red-600" />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
-      {/* Info Grid */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <div className="p-3 bg-slate-50 rounded-xl">
-           <p className="text-[10px] uppercase font-black text-slate-400 tracking-wider">Total Spent</p>
-           <p className="font-black text-slate-900">{formatCurrency(customer.total_spent)}</p>
+      {/* Insane Stats Row */}
+      <div className="grid grid-cols-2 gap-4 mb-8 relative z-10">
+        <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100/50">
+           <p className="text-[10px] uppercase font-black text-slate-400 tracking-widest">Total Value</p>
+           <p className="font-black text-lg text-slate-900 mt-1">{formatCurrency(customer.total_spent || 0)}</p>
         </div>
-        <div className="p-3 bg-slate-50 rounded-xl">
-           <p className="text-[10px] uppercase font-black text-slate-400 tracking-wider">Last Visit</p>
-           <p className="font-bold text-sm text-slate-700">{customer.last_visit}</p>
+        <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100/50">
+           <p className="text-[10px] uppercase font-black text-slate-400 tracking-widest">Last Activity</p>
+           <p className="font-bold text-sm text-slate-700 mt-1 uppercase tracking-tight">{customer.last_visit || 'No data'}</p>
         </div>
       </div>
 
-      {/* Tags & Status */}
-      <div className="flex items-center justify-between">
+      {/* Floating Action Bar */}
+      <div className="flex items-center justify-between relative z-10">
         <div className="flex gap-2">
           <span className={cn(
-            "px-3 py-1 rounded-full text-[10px] font-black uppercase border transition-all",
-            TAG_COLORS[customer.tag as keyof typeof TAG_COLORS] || 'bg-slate-100'
+            "px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest bg-gradient-to-br shadow-lg",
+            TAG_COLORS[customer.tag as keyof typeof TAG_COLORS] || 'from-slate-100 to-slate-200 text-slate-500'
           )}>
-            {customer.tag}
+            {customer.tag || 'New'}
           </span>
-          {customer.payment_status === 'Pending' && (
-            <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase bg-red-100 text-red-700 border border-red-200">
-              PENDING
-            </span>
-          )}
         </div>
-        <div className="flex gap-2">
-          <a href={`tel:${customer.phone}`} className="p-2 bg-brand-dark/5 text-brand-dark rounded-xl hover:bg-brand-dark hover:text-white transition-all">
-            <Phone size={18} />
-          </a>
-          <a href={`https://wa.me/${customer.phone}`} target="_blank" className="p-2 bg-green-50 text-green-600 rounded-xl hover:bg-green-600 hover:text-white transition-all">
-            <MessageCircle size={18} />
-          </a>
+        <div className="flex gap-3">
+          <motion.a 
+            whileTap={{ scale: 0.9 }}
+            href={`tel:${customer.phone}`} 
+            className="w-12 h-12 bg-brand-dark/5 text-brand-dark rounded-2xl flex items-center justify-center hover:bg-brand-dark hover:text-white transition-all shadow-sm"
+          >
+            <Phone size={20} />
+          </motion.a>
+          <motion.a 
+            whileTap={{ scale: 0.9 }}
+            href={`https://wa.me/${customer.phone}`} 
+            target="_blank" 
+            className="w-12 h-12 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center hover:bg-green-600 hover:text-white transition-all shadow-sm"
+          >
+            <MessageCircle size={20} />
+          </motion.a>
         </div>
       </div>
       
-      {/* Smart Tag Hint */}
-      {customer.tag === 'Regular' && customer.total_spent > 10000 && (
-        <div className="mt-4 p-2 bg-purple-50 rounded-lg flex items-center gap-2 border border-purple-100 animate-pulse">
-           <Star size={14} className="text-purple-600 fill-purple-600" />
-           <span className="text-[10px] font-bold text-purple-700">AI Hint: Raj visits often. Tag as VIP?</span>
-        </div>
-      )}
-    </div>
+      {/* AI Smart Insight Overlay */}
+      <div className="absolute -bottom-2 -left-2 right-10 p-4 bg-white/40 backdrop-blur-md rounded-tr-[2rem] border-t border-r border-white/50 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-500 pointer-events-none">
+         <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-brand-orange text-white rounded-lg flex items-center justify-center shadow-lg shadow-orange-200">
+               <Sparkles size={14} fill="white" />
+            </div>
+            <p className="text-[11px] font-bold text-slate-700 leading-tight">
+              AI Insight: {customer.tag === 'VIP' ? 'Reward this customer with a special discount.' : 'Send a friendly follow-up to increase visits.'}
+            </p>
+         </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function MenuButton({ icon, label, color = "text-slate-700" }: any) {
+  return (
+    <button className={cn(
+      "w-full flex items-center gap-4 px-6 py-3 text-sm font-bold hover:bg-slate-50 transition-all text-left group",
+      color
+    )}>
+      <span className="transition-transform group-hover:scale-110">{icon}</span>
+      {label}
+    </button>
   );
 }
 

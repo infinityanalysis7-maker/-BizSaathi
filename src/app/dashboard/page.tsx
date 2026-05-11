@@ -10,210 +10,386 @@ import {
   FileText, 
   MessageSquare, 
   TrendingUp,
-  Sparkles
+  Sparkles,
+  TrendingDown,
+  ChevronRight,
+  PlusCircle,
+  BarChart3
 } from 'lucide-react';
 import { useUser } from '@clerk/nextjs';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, cn } from '@/lib/utils';
 import { generateContent } from '@/lib/gemini';
 import { supabase } from '@/lib/supabase';
-import { toast } from 'sonner';
+import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
 
 export default function Dashboard() {
   const { user } = useUser();
   const [loading, setLoading] = useState(true);
   const [aiTip, setAiTip] = useState<string>('Generating your business tip...');
   const [business, setBusiness] = useState<any>(null);
+  const [stats, setStats] = useState({
+    revenue: 0,
+    pending: 0,
+    customers: 0,
+    followups: 0
+  });
+  const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
+  const [recentFollowups, setRecentFollowups] = useState<any[]>([]);
 
   useEffect(() => {
     async function fetchData() {
       if (!user) return;
       
-      // Fetch Business Info
-      const { data, error } = await supabase
-        .from('businesses')
-        .select('*')
-        .eq('owner_id', user.id)
-        .single();
+      try {
+        // Fetch Business Info
+        const { data: bizData } = await supabase
+          .from('businesses')
+          .select('*')
+          .eq('owner_id', user.id)
+          .single();
 
-      if (data) {
-        setBusiness(data);
-        generateTip(data.type);
+        if (bizData) {
+          setBusiness(bizData);
+          generateTip(bizData.type);
+
+          // Fetch Stats
+          const { data: transData } = await supabase
+            .from('transactions')
+            .select('*')
+            .eq('business_id', bizData.id);
+
+          const { count: customerCount } = await supabase
+            .from('customers')
+            .select('*', { count: 'exact', head: true })
+            .eq('business_id', bizData.id);
+
+          const { data: followupData } = await supabase
+            .from('followups')
+            .select('*')
+            .eq('business_id', bizData.id)
+            .eq('status', 'Pending');
+
+          if (transData) {
+            const revenue = transData
+              .filter(t => t.type === 'Income')
+              .reduce((acc, t) => acc + Number(t.amount), 0);
+            
+            const pending = transData
+              .filter(t => t.status === 'Pending')
+              .reduce((acc, t) => acc + Number(t.amount), 0);
+
+            setStats({
+              revenue,
+              pending,
+              customers: customerCount || 0,
+              followups: followupData?.length || 0
+            });
+
+            setRecentTransactions(transData.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 5));
+          }
+
+          if (followupData) {
+            setRecentFollowups(followupData.slice(0, 3));
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
 
     fetchData();
   }, [user]);
 
   const generateTip = async (type: string) => {
-    const prompt = `Give a short, actionable business growth tip for a ${type} in India. Focus on customer retention or marketing. Keep it under 20 words. Include one relevant emoji.`;
-    const tip = await generateContent(prompt);
-    setAiTip(tip);
+    try {
+      const prompt = `Give a short, actionable business growth tip for a ${type} in India. Focus on customer retention or marketing. Keep it under 20 words. Include one relevant emoji.`;
+      const tip = await generateContent(prompt);
+      setAiTip(tip);
+    } catch (e) {
+      setAiTip("Always keep your customers first! 🤝");
+    }
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[80vh]">
+        <div className="w-12 h-12 border-4 border-brand-orange border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   return (
-    <div className="p-4 md:p-8 max-w-7xl mx-auto w-full space-y-8">
-      {/* Header */}
-      <header className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold text-brand-dark">Namaste, {user?.firstName || 'Business Owner'}! 👋</h1>
-        <p className="text-slate-500">Aapke business ka haal-chaal yahan hai.</p>
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="p-4 md:p-8 max-w-7xl mx-auto w-full space-y-10"
+    >
+      {/* 3D Glass Header */}
+      <header className="relative p-8 rounded-[2.5rem] bg-white border border-white/50 shadow-2xl overflow-hidden group">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-brand-orange/10 blur-[80px] -mr-32 -mt-32 transition-all group-hover:bg-brand-orange/20" />
+        <div className="relative z-10">
+          <h1 className="text-3xl md:text-4xl font-black text-brand-dark tracking-tight">
+            Namaste, <span className="text-brand-orange">{user?.firstName || 'Business Owner'}</span>! 👋
+          </h1>
+          <p className="text-slate-500 mt-2 font-medium">Aapke business ka haal-chaal yahan hai.</p>
+        </div>
       </header>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* 3D Stats Bento Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard 
-          icon={<IndianRupee className="text-green-600" size={20} />}
+          icon={<IndianRupee />}
           label="Today's Revenue"
-          value={formatCurrency(12500)}
-          color="bg-green-50"
+          value={formatCurrency(stats.revenue)}
+          color="orange"
+          delay={0.1}
         />
         <StatCard 
-          icon={<Clock className="text-red-500" size={20} />}
+          icon={<Clock />}
           label="Pending Payments"
-          value={formatCurrency(4200)}
-          color="bg-red-50"
-          isUrgent
+          value={formatCurrency(stats.pending)}
+          color="red"
+          isUrgent={stats.pending > 0}
+          delay={0.2}
         />
         <StatCard 
-          icon={<Users className="text-blue-600" size={20} />}
-          label="Customers (Month)"
-          value="48"
-          color="bg-blue-50"
+          icon={<Users />}
+          label="Total Customers"
+          value={stats.customers.toString()}
+          color="blue"
+          delay={0.3}
         />
         <StatCard 
-          icon={<ArrowUpRight className="text-orange-500" size={20} />}
-          label="Follow-ups Due"
-          value="12"
-          color="bg-orange-50"
+          icon={<BarChart3 />}
+          label="Pending Tasks"
+          value={stats.followups.toString()}
+          color="green"
+          delay={0.4}
         />
       </div>
 
-      {/* Quick Actions */}
-      <section className="space-y-4">
-        <h2 className="text-lg font-bold text-brand-dark">Quick Actions</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <ActionButton icon={<Plus />} label="Add Customer" color="bg-brand-orange" />
-          <ActionButton icon={<FileText />} label="Create Invoice" color="bg-brand-dark" />
-          <ActionButton icon={<MessageSquare />} label="AI Caption" color="bg-indigo-600" />
-          <ActionButton icon={<TrendingUp />} label="View Reports" color="bg-emerald-600" />
+      {/* High-Octane Quick Actions */}
+      <section className="space-y-6">
+        <h2 className="text-xl font-black text-brand-dark px-2">Quick Actions</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <ActionButton icon={<PlusCircle />} label="Add Customer" href="/customers" color="bg-brand-orange" delay={0.1} />
+          <ActionButton icon={<FileText />} label="Create Invoice" href="/invoices/create" color="bg-brand-dark" delay={0.2} />
+          <ActionButton icon={<MessageSquare />} label="AI Marketing" href="/ai-tools" color="bg-indigo-600" delay={0.3} />
+          <ActionButton icon={<TrendingUp />} label="View Reports" href="/reports" color="bg-emerald-600" delay={0.4} />
         </div>
       </section>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {/* Recent Transactions */}
-        <section className="md:col-span-2 space-y-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-lg font-bold text-brand-dark">Recent Transactions</h2>
-            <button className="text-brand-orange text-sm font-bold">View All</button>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        {/* Recent Transactions with 3D Depth */}
+        <section className="lg:col-span-2 space-y-6">
+          <div className="flex justify-between items-center px-2">
+            <h2 className="text-xl font-black text-brand-dark">Recent Transactions</h2>
+            <Link href="/transactions" className="text-brand-orange font-bold flex items-center gap-1 hover:gap-2 transition-all">
+              View All <ChevronRight size={16} />
+            </Link>
           </div>
-          <div className="card divide-y divide-slate-100 p-0 overflow-hidden">
-            <TransactionItem name="Rajesh Kumar" amount={1200} type="Income" status="Paid" date="10:30 AM" />
-            <TransactionItem name="Sunita Pharmacy" amount={4500} type="Expense" status="Paid" date="09:15 AM" />
-            <TransactionItem name="Amit Singh" amount={800} type="Income" status="Pending" date="Yesterday" />
-            <TransactionItem name="Electricity Bill" amount={2200} type="Expense" status="Paid" date="Yesterday" />
-            <TransactionItem name="Priya Salon" amount={1500} type="Income" status="Paid" date="2 days ago" />
+          
+          <div className="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 overflow-hidden">
+            {recentTransactions.length > 0 ? (
+              <div className="divide-y divide-slate-50">
+                {recentTransactions.map((t, i) => (
+                  <TransactionItem key={t.id} data={t} index={i} />
+                ))}
+              </div>
+            ) : (
+              <EmptyState 
+                title="No transactions yet" 
+                desc="Start recording your sales and expenses." 
+                icon={< IndianRupee />}
+                action="/transactions"
+              />
+            )}
           </div>
         </section>
 
-        {/* Sidebar Sections */}
-        <div className="space-y-8">
-          {/* AI Tip Section */}
-          <section className="card bg-gradient-to-br from-brand-orange to-orange-600 text-white border-none shadow-orange">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="p-2 bg-white/20 rounded-lg">
-                <Sparkles size={20} />
+        {/* AI & Follow-ups Sidebar */}
+        <div className="space-y-10">
+          {/* Neon AI Tip Section */}
+          <motion.section 
+            whileHover={{ y: -5, scale: 1.02 }}
+            className="p-8 rounded-[2.5rem] bg-gradient-to-br from-brand-dark to-slate-800 text-white shadow-2xl relative overflow-hidden"
+          >
+            <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-brand-orange/20 blur-[50px] rounded-full" />
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-3 bg-brand-orange/20 rounded-2xl text-brand-orange ring-1 ring-brand-orange/30">
+                  <Sparkles size={24} />
+                </div>
+                <h3 className="font-black text-lg tracking-tight">AI Business Tip</h3>
               </div>
-              <h3 className="font-bold">AI Business Tip</h3>
+              <p className="text-slate-300 leading-relaxed font-medium text-lg italic">
+                "{aiTip}"
+              </p>
             </div>
-            <p className="text-orange-50 leading-relaxed font-medium italic">
-              "{aiTip}"
-            </p>
-          </section>
+          </motion.section>
 
-          {/* Follow-ups */}
-          <section className="space-y-4">
-             <h2 className="text-lg font-bold text-brand-dark">Due Follow-ups</h2>
-             <div className="space-y-3">
-                <FollowUpItem name="Rahul Verma" reason="Payment Pending" days={2} />
-                <FollowUpItem name="Meena Gupta" reason="Next Visit Due" days={5} />
-                <FollowUpItem name="Karan Johar" reason="Order Status" days={1} isOverdue />
+          {/* Follow-ups with Glassmorphism */}
+          <section className="space-y-6">
+             <h2 className="text-xl font-black text-brand-dark px-2">Due Follow-ups</h2>
+             <div className="space-y-4">
+                {recentFollowups.length > 0 ? (
+                  recentFollowups.map((f, i) => (
+                    <FollowUpItem key={f.id} data={f} index={i} />
+                  ))
+                ) : (
+                  <div className="p-10 text-center bg-white rounded-[2.5rem] border-2 border-dashed border-slate-200">
+                    <p className="text-slate-400 font-bold">All caught up! 🎉</p>
+                  </div>
+                )}
              </div>
           </section>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
-function StatCard({ icon, label, value, color, isUrgent }: any) {
+function StatCard({ icon, label, value, color, isUrgent, delay }: any) {
+  const colors: any = {
+    orange: "text-orange-600 bg-orange-50 shadow-orange-100",
+    red: "text-red-600 bg-red-50 shadow-red-100",
+    blue: "text-blue-600 bg-blue-50 shadow-blue-100",
+    green: "text-emerald-600 bg-emerald-50 shadow-emerald-100",
+  };
+
   return (
-    <div className="card flex flex-col gap-3 p-5">
-      <div className={`w-10 h-10 ${color} rounded-xl flex items-center justify-center`}>
-        {icon}
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay }}
+      whileHover={{ y: -8, rotateX: 2, rotateY: -2 }}
+      className="bg-white p-6 rounded-[2.5rem] shadow-xl border border-slate-50 flex flex-col gap-4 relative overflow-hidden group transition-all"
+    >
+      <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110", colors[color])}>
+        {React.cloneElement(icon, { size: 28, strokeWidth: 2.5 })}
       </div>
       <div>
-        <p className="text-xs text-slate-500 font-medium">{label}</p>
-        <p className={`text-xl font-black mt-1 ${isUrgent ? 'text-red-600' : 'text-brand-dark'}`}>
+        <p className="text-sm text-slate-500 font-bold uppercase tracking-wider">{label}</p>
+        <p className={cn("text-3xl font-black mt-1", isUrgent ? 'text-red-600' : 'text-brand-dark')}>
           {value}
         </p>
       </div>
-    </div>
-  );
-}
-
-function ActionButton({ icon, label, color }: any) {
-  return (
-    <button className={`${color} text-white p-4 rounded-2xl flex flex-col items-center justify-center gap-3 active:scale-95 transition-all shadow-lg hover:brightness-110`}>
-      <div className="p-2 bg-white/20 rounded-lg">
-        {React.cloneElement(icon, { size: 24 })}
+      <div className="absolute -bottom-2 -right-2 opacity-5 scale-150 rotate-12 transition-transform group-hover:rotate-0">
+        {icon}
       </div>
-      <span className="text-sm font-bold">{label}</span>
-    </button>
+    </motion.div>
   );
 }
 
-function TransactionItem({ name, amount, type, status, date }: any) {
+function ActionButton({ icon, label, color, delay, href }: any) {
   return (
-    <div className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors">
-      <div className="flex items-center gap-3">
-        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${type === 'Income' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-          {name.charAt(0)}
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ delay }}
+    >
+      <Link href={href} className={`${color} text-white p-6 rounded-[2rem] flex flex-col items-center justify-center gap-4 active:scale-95 transition-all shadow-2xl hover:shadow-3xl hover:-translate-y-2 group relative overflow-hidden`}>
+        <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-md ring-1 ring-white/30 transition-transform group-hover:rotate-12">
+          {React.cloneElement(icon, { size: 32, strokeWidth: 2 })}
+        </div>
+        <span className="text-sm font-black uppercase tracking-tight">{label}</span>
+      </Link>
+    </motion.div>
+  );
+}
+
+function TransactionItem({ data, index }: any) {
+  const isIncome = data.type === 'Income';
+  return (
+    <motion.div 
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: index * 0.1 }}
+      className="flex items-center justify-between p-6 hover:bg-slate-50/80 transition-all cursor-default group"
+    >
+      <div className="flex items-center gap-5">
+        <div className={cn(
+          "w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl transition-transform group-hover:scale-110",
+          isIncome ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+        )}>
+          {data.customer_name ? data.customer_name.charAt(0) : <IndianRupee size={24} />}
         </div>
         <div>
-          <p className="font-bold text-slate-900">{name}</p>
-          <p className="text-xs text-slate-500">{date} • {type}</p>
+          <p className="font-black text-lg text-slate-900 tracking-tight">{data.description || data.customer_name || 'Transaction'}</p>
+          <p className="text-sm font-bold text-slate-400 flex items-center gap-2 mt-1">
+            {new Date(data.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • 
+            <span className={isIncome ? 'text-green-500/80' : 'text-red-500/80'}>{data.category || data.type}</span>
+          </p>
         </div>
       </div>
       <div className="text-right">
-        <p className={`font-black ${type === 'Income' ? 'text-green-600' : 'text-brand-dark'}`}>
-          {type === 'Income' ? '+' : '-'}{formatCurrency(amount)}
+        <p className={cn("text-xl font-black tracking-tight", isIncome ? 'text-green-600' : 'text-brand-dark')}>
+          {isIncome ? '+' : '-'}{formatCurrency(data.amount)}
         </p>
-        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${status === 'Paid' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-          {status}
+        <span className={cn(
+          "text-[10px] font-black uppercase px-3 py-1 rounded-full mt-2 inline-block shadow-sm",
+          data.status === 'Paid' ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-orange-50 text-orange-700 border border-orange-100'
+        )}>
+          {data.status}
         </span>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
-function FollowUpItem({ name, reason, days, isOverdue }: any) {
+function FollowUpItem({ data, index }: any) {
+  const isOverdue = new Date(data.due_date) < new Date();
   return (
-    <div className={`p-4 rounded-2xl border flex items-center justify-between ${isOverdue ? 'bg-red-50 border-red-100' : 'bg-white border-slate-100'}`}>
-      <div className="flex items-center gap-3">
-         <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isOverdue ? 'bg-red-100 text-red-600' : 'bg-slate-100 text-slate-600'}`}>
-            <Clock size={18} />
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.1 }}
+      className={cn(
+        "p-6 rounded-[2rem] border transition-all hover:shadow-xl group cursor-pointer",
+        isOverdue ? 'bg-red-50 border-red-100' : 'bg-white border-slate-100 shadow-sm'
+      )}
+    >
+      <div className="flex items-center gap-4">
+         <div className={cn(
+           "w-14 h-14 rounded-2xl flex items-center justify-center transition-transform group-hover:rotate-12",
+           isOverdue ? 'bg-red-100 text-red-600' : 'bg-brand-orange/10 text-brand-orange'
+         )}>
+            <Clock size={24} strokeWidth={2.5} />
          </div>
-         <div>
-            <p className="font-bold text-sm text-slate-900">{name}</p>
-            <p className="text-[10px] text-slate-500">{reason}</p>
+         <div className="flex-1">
+            <p className="font-black text-slate-900 tracking-tight">{data.customer_name || 'Customer'}</p>
+            <p className="text-xs font-bold text-slate-500 mt-1 uppercase tracking-wider">{data.reason}</p>
+         </div>
+         <div className="text-right">
+            <p className={cn("text-xs font-black uppercase tracking-widest", isOverdue ? 'text-red-600' : 'text-brand-orange')}>
+              {isOverdue ? 'Overdue' : 'Upcoming'}
+            </p>
+            <button className="bg-brand-orange/10 text-brand-orange text-[10px] font-black uppercase px-3 py-1 rounded-lg mt-2 hover:bg-brand-orange hover:text-white transition-all">
+              Message
+            </button>
          </div>
       </div>
-      <div className="text-right">
-         <p className={`text-xs font-bold ${isOverdue ? 'text-red-600' : 'text-slate-400'}`}>
-            {isOverdue ? 'OVERDUE' : `In ${days} days`}
-         </p>
-         <button className="text-brand-orange text-[10px] font-black uppercase mt-1">Message</button>
+    </motion.div>
+  );
+}
+
+function EmptyState({ title, desc, icon, action }: any) {
+  return (
+    <div className="p-16 text-center flex flex-col items-center gap-4">
+      <div className="w-20 h-20 bg-slate-50 rounded-[2rem] flex items-center justify-center text-slate-300">
+        {React.cloneElement(icon, { size: 40 })}
       </div>
+      <div>
+        <h3 className="text-xl font-black text-slate-900">{title}</h3>
+        <p className="text-slate-500 font-medium mt-1">{desc}</p>
+      </div>
+      <Link href={action} className="mt-4 px-8 py-3 bg-brand-orange text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-orange-100 hover:scale-105 active:scale-95 transition-all">
+        Get Started
+      </Link>
     </div>
   );
 }
