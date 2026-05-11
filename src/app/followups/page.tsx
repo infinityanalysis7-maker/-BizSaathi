@@ -85,7 +85,7 @@ export default function FollowUpsPage() {
       {/* List */}
       <div className="space-y-4">
         {followups
-          .filter(f => activeTab === 'All' || f.status === activeTab)
+          .filter(f => (activeTab as string) === 'All' || f.status === activeTab)
           .map((f) => (
           <div key={f.id} className="card p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:shadow-lg transition-all border-l-8 border-l-brand-orange">
             <div className="flex items-center gap-4">
