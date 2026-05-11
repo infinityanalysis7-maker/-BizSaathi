@@ -4,8 +4,8 @@ import { ArrowRight, Sparkles, ShieldCheck, Receipt, Users, Smartphone, Trending
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 
-export default function LandingPage() {
-  const { userId } = auth();
+export default async function LandingPage() {
+  const { userId } = await auth();
 
   if (userId) {
     redirect('/dashboard');
